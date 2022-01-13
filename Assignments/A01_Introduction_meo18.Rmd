@@ -1,0 +1,43 @@
+---
+title: "Assignment 1: Introduction"
+author: "Maggie O'Shea"
+output: pdf_document
+geometry: margin=2.54cm
+---
+
+## OVERVIEW
+
+This exercise accompanies the introductory material in Environmental Data Analytics. 
+
+## Directions
+1. Change "Student Name" on line 3 (above) with your name.
+3. Work through the steps, **creating code and output** that fulfill each instruction.
+4. Be sure to **answer the questions** in this assignment document.
+6. When you have completed the assignment, **Knit** the text and code into a single PDF file.
+8. After Knitting, submit the completed exercise (PDF file) to the dropbox in Sakai. Add your last name into the file name (e.g., "Lima_A01_Introduction.Rmd") prior to submission.
+
+The completed exercise is due on <>.
+
+## 1) Discussion Questions
+
+**1. What are your previous experiences with data analytics, R, and Git? Include both formal and informal training.**
+
+> *Answer:* I have never used GitHub prior to joining this course. I have used R, however, through Professor Betsy Albright's Applied Data Analysis for Environmental Social Sciences. In addition, I am just beginning my 3-semester Master's Project which is a data analysis project using R. 
+
+**2. Are there any components of the course about which you feel confident?**
+
+> *Answer:* Because I have some background in R, I feel confident in my ability to do the first few modules as these are things I have done before, though I am sure there will be new information and new challenges that come up even in these first assignments. 
+
+**3. Are there any components of the course about which you feel apprehensive?**
+
+> *Answer:* Because I am very excited and eager to learn more about data analytics and R, I am not particularly apprehensive about any topic or module. Though I understand many of the topics will be challenging, I am ready and excited for the challenge!
+
+
+## 2) GitHub
+
+Provide a link below to your forked course repository in GitHub. Make sure you have pulled all recent changes from the course repository and that you have updated your course README file. 
+
+> *Answer:* https://github.com/maggieoshea/Environmental_Data_Analytics_2022/tree/main
+
+
+
