@@ -45,6 +45,7 @@ car_speed
 ## Transforming object in a data frame
 
 Is the new object you create a data frame?
+No, it looks like a string/list of numbers, potentially a matrix! 
 ```{r}
 #Option 1
 class(car_speed)
@@ -109,11 +110,15 @@ nrow(df)
 length(df)  #same as ncol
 summary(df)
 head(df) #show the first 6 rows of df
+```
 
+```{r}
 #If you know the number of the column you want you can refer to that to access column
 df[,1]
+```
 
+```{r}
 #you could also use this notation to delete columns
-df <- df[,-2]
-df
+df.delcolumns <- df[,-2]
+df.delcolumns
 ```

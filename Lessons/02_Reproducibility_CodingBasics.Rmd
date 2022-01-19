@@ -117,16 +117,22 @@ Informative names are the first illustration of a common data management recomme
 
 Importantly, you may never call an R object "data". This word is reserved for a specific function and may not be assigned as a name. To work around this, many people call their R objects "dat", which is another example of a less-than-ideal data management practice because it is not informative. 
 
-Run the first line of code below. Then, type in "long" and press `tab`. What happens?
+Run the first line of code below. Then, type in "long" and press `tab`. *What happens?*
+After pressing tab, the full name of the object long_name_for_illustration is automatically filled in for me. 
+
 
 What happens if there is a typo in your code?
 Type the following in the R window: 
 Long_name_for_illustration
 longnameforillustration
 
+These objects were not found. 
+
 ```{r}
 long_name_for_illustration <- 11
-
+long_name_for_illustration
+Long_name_for_illustration
+longnameforillustration
 ```
 
 ### Comments
