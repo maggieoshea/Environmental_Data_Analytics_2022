@@ -86,11 +86,11 @@ Visualize distributions of values for continuous numerical variables. What is ha
 ggplot(USGS.flow.data) +
   geom_histogram(aes(x = discharge.mean))
 
-#
+#default binwidth is 30
 ggplot(USGS.flow.data) +
   geom_histogram(aes(x = discharge.mean), binwidth = 10)
 
-#
+#Ideal bins is 5-20 -- too many will show noise rather than single, and too few may not show patterns well
 ggplot(USGS.flow.data) +
   geom_histogram(aes(x = discharge.mean), bins = 20)
 
@@ -109,14 +109,14 @@ ggplot(USGS.flow.data) +
 An alternate to a histogram is a frequency polygon graph (distributions of values for continuous numerical variables). Instead of displaying bars,  counts of continuous variables are displayed as lines. This is advantageous if you want to display multiple variables or categories of variables at once.
 
 ```{r, fig.height = 3, fig.width = 4}
-#
-ggplot(USGS.flow.data) +
+#R Studio- help - cheat sheet - data visualization
+#lty=2 is code for dashed line
+ggplot(USGS.flow.data) + 
   geom_freqpoly(aes(x = gage.height.mean), bins = 50, color="red") +
-  geom_freqpoly(aes(x = gage.height.min), bins = 50, color = "blue") +
-  geom_freqpoly(aes(x = gage.height.max), bins = 50,  lty = 2, color = "green") +
+  geom_freqpoly(aes(x = gage.height.min), bins = 50, color = "blue") + geom_freqpoly(aes(x = gage.height.max), bins = 50,  lty = 2, color = "green") +
   scale_x_continuous(limits = c(0, 10))
 
-#
+#Can set color to different categorical value 
 ggplot(USGS.flow.data) +
   geom_freqpoly(aes(x = gage.height.mean, color = gage.height.mean.approval), bins = 50) +
   scale_x_continuous(limits = c(0, 10)) +
@@ -146,7 +146,7 @@ ggplot(USGS.flow.data) +
 ggplot(USGS.flow.data) +
   geom_boxplot(aes(x = gage.height.mean, y = discharge.mean, group = cut_width(gage.height.mean, 1)))
 
-#
+#violin shows how much data are in each distribution area 
 ggplot(USGS.flow.data) +
   geom_violin(aes(x = gage.height.mean.approval, y = gage.height.mean), 
               draw_quantiles = c(0.25, 0.5, 0.75))
@@ -169,14 +169,14 @@ Question: under what circumstances would it be beneficial to use each of these g
 ## Ending discussion
 
 What did you learn about the USGS discharge dataset today? What separate insights did the different graph types offer?
-> Answer: Though this was somewhat visible in the histogram, the boxplot showed that there are a significant number of outliers in the "gage height mean." The boxplot also shows the that the "p" approval seems to be slightly skewed, moreso than the "A" approval. 
+> Answer: Though this was somewhat visible in the histogram, the boxplot showed that there are a significant number of outliers in the "gage height mean." The boxplot also shows the that the "P" approval seems to be slightly skewed, moreso than the "A" approval, possibly because there are much fewer "p" records.  
 
 
 How can multiple options for data exploration inform our understanding of our data?
-> Answer: The different charts are all important to explore while exploring the data because they help to highlight different things. For example, the box plot can show the skewness of the dataset. The frequency polygon grapshs also provided interesting insight, similar to that of the histograms but offered more beyond this because it allowed for comparison across categories. This showed that the frequency of the mean is much greater than the min or max, and, interestingly, the frequency of the minimum is much greater (~250) than the frequency of the maximum. 
+> Answer: The different charts are all important to explore while exploring the data because they help to highlight different things. For example, the box plot can show the skewness of the dataset. The frequency polygon graphs also provided interesting insight, similar to that of the histograms but offered more beyond this because it allowed for comparison across categories. This showed that the frequency of the mean is much greater than the min or max, and, interestingly, the frequency of the minimum is much greater (~250) than the frequency of the maximum. The scatterplots, finally, help to show the relationship between variables in ways that others could not - for example the increase in discharge mean is not proportional to gauge height. 
 
 
 Do you see any patterns in the USGS data for the Eno River? What might be responsible for those patterns and/or relationships?
-> Answer: One pattern in the histograms was that the frequency of higher discharges was extremely low, and the vast majority fell between 0-100 
+> Answer: One pattern in the histograms was that the frequency of higher discharges was extremely low, and the vast majority fell between 0-100, with the distribution skewed towards zero. The high number of zeros may suggest droughts, whereas the few outliers of high discharge may indicate flood events or high water events which, when looking with the datetime variable, some seasonal patterns seem to emerge, though it is difficult to see given the large time scale. 
 
 
