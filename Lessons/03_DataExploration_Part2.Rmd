@@ -29,7 +29,7 @@ getwd()
 library(tidyverse)
 
 # 3. Import datasets
-USGS.flow.data <- read.csv("./Data/Processed/USGS_Site02085000_Flow_Processed.csv")
+USGS.flow.data <- read.csv("/Users/maggieoshea/Desktop/Spring 2022/Data Analytics/Environmental_Data_Analytics_2022/Data/Raw/USGS_Site02085000_Flow_Raw.csv")
 
 #View(USGS.flow.data)
 # Alternate option: click on data frame in Environment tab
@@ -38,6 +38,17 @@ colnames(USGS.flow.data)
 str(USGS.flow.data)
 dim(USGS.flow.data)
 
+class(USGS.flow.data)
+colnames(USGS.flow.data)
+
+# Rename columns
+colnames(USGS.flow.data) <- c("agency_cd", "site_no", "datetime", 
+                              "discharge.max", "discharge.max.approval", 
+                              "discharge.min", "discharge.min.approval", 
+                              "discharge.mean", "discharge.mean.approval", 
+                              "gage.height.max", "gage.height.max.approval", 
+                              "gage.height.min", "gage.height.min.approval", 
+                              "gage.height.mean", "gage.height.mean.approval")
 # Check our date column
 class(USGS.flow.data$datetime)
 
@@ -60,6 +71,10 @@ Visualize count data for categorical variables.
 ```{r, fig.height = 3, fig.width = 4}
 ggplot(USGS.flow.data, aes(x = discharge.mean.approval)) +
   geom_bar()
+
+ggplot(na.omit(USGS.flow.data), aes(x = discharge.mean.approval)) +
+  geom_bar()
+#Bar plots perfect for categorical data 
 ```
 
 ### Histogram (function: geom_histogram)
@@ -82,7 +97,7 @@ ggplot(USGS.flow.data) +
 #
 ggplot(USGS.flow.data, aes(x = discharge.mean)) +
   geom_histogram(binwidth = 10) + 
-  scale_x_continuous(limits = c(0, 500))
+  scale_x_continuous(limits = c(0, 100))
   
 #
 ggplot(USGS.flow.data) +
@@ -96,9 +111,9 @@ An alternate to a histogram is a frequency polygon graph (distributions of value
 ```{r, fig.height = 3, fig.width = 4}
 #
 ggplot(USGS.flow.data) +
-  geom_freqpoly(aes(x = gage.height.mean), bins = 50) +
-  geom_freqpoly(aes(x = gage.height.min), bins = 50, color = "darkgray") +
-  geom_freqpoly(aes(x = gage.height.max), bins = 50,  lty = 2) +
+  geom_freqpoly(aes(x = gage.height.mean), bins = 50, color="red") +
+  geom_freqpoly(aes(x = gage.height.min), bins = 50, color = "blue") +
+  geom_freqpoly(aes(x = gage.height.max), bins = 50,  lty = 2, color = "green") +
   scale_x_continuous(limits = c(0, 10))
 
 #
@@ -149,22 +164,19 @@ ggplot(USGS.flow.data) +
 ```
 
 Question: under what circumstances would it be beneficial to use each of these graph types (bar plot, histogram, frequency polygon, box-and whisker, violin, scatterplot)?
-
 > Answer: 
 
 ## Ending discussion
 
 What did you learn about the USGS discharge dataset today? What separate insights did the different graph types offer?
-> Answer: 
+> Answer: Though this was somewhat visible in the histogram, the boxplot showed that there are a significant number of outliers in the "gage height mean." The boxplot also shows the that the "p" approval seems to be slightly skewed, moreso than the "A" approval. 
 
 
 How can multiple options for data exploration inform our understanding of our data?
-
-> Answer: 
+> Answer: The different charts are all important to explore while exploring the data because they help to highlight different things. For example, the box plot can show the skewness of the dataset. The frequency polygon grapshs also provided interesting insight, similar to that of the histograms but offered more beyond this because it allowed for comparison across categories. This showed that the frequency of the mean is much greater than the min or max, and, interestingly, the frequency of the minimum is much greater (~250) than the frequency of the maximum. 
 
 
 Do you see any patterns in the USGS data for the Eno River? What might be responsible for those patterns and/or relationships?
-
-> Answer: 
+> Answer: One pattern in the histograms was that the frequency of higher discharges was extremely low, and the vast majority fell between 0-100 
 
 
