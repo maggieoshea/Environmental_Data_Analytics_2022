@@ -75,15 +75,16 @@ names(dataframe1) <- c("ID","Color","Passed"); View(dataframe1) #
 dataframe1[1:2,] # 
 dataframe1[c("ID","Passed")] # 
 dataframe1$ID
+dataframe$
 
 ```
 Question: How do the different types of data appear in the Environment tab?
 
-> Answer: 
+> Answer: The data appears organized into type of data with all of the dataframes under "data", the vectors under "values", and functions under "Functions." 
 
 Question: In the R chunk below, write "dataframe1$". Press `tab` after you type the dollar sign. What happens?
 
-> Answer: 
+> Answer: When hitting tab, it shows you all the columns in the dataframe from which you can select. 
 
 
 
@@ -93,26 +94,41 @@ Question: In the R chunk below, write "dataframe1$". Press `tab` after you type 
 Find a ten-day forecast of temperatures (Fahrenheit) for Durham, North Carolina. Create two vectors, one representing the high temperature on each of the ten days and one representing the low.
 
 ```{r}
-
+hightemp.durham<-c(49, 57, 40, 41, 44, 37, 41, 51, 52, 53)
+lowtemp.durham<- c(30, 30, 18, 26, 26, 18, 26, 26, 28, 40)
 ```
 
 Now, create two additional vectors that include the ten-day forecast for the high and low temperatures in Celsius. Use a function to create the two new vectors from your existing ones in Fahrenheit.
 
 ```{r}
-
+fahrenheittocelsius<-function(x)
+  x-32/1.8
+celsius.hightemp<-fahrenheittocelsius(hightemp.durham)
+celsius.lowtemp<-fahrenheittocelsius(lowtemp.durham)
+print(celsius.hightemp)
+print(celsius.lowtemp)
 ```
 
 Combine your four vectors into a data frame and add informative column names.
 
 ```{r}
+library(dplyr)
+```
+
+```{r}
+
+Durhamtemperature.df <- data.frame("Fahrenheit Highs"=hightemp.durham,"Fahrenheit Lows"=lowtemp.durham, "Celsius Highs"=celsius.hightemp, "Celsius Lows"=celsius.lowtemp)
 
 ```
+
 
 Use the common functions `summary` and `sd` to obtain basic data summaries of the ten-day forecast. How would you call these functions differently for the entire data frame vs. a single column? Attempt to demonstrate both options below.
 
 ```{r}
-
+fahrenheit.sd<-sd(Durhamtemperature.df$Fahrenheit.Highs)
+summary(Durhamtemperature.df$Fahrenheit.Highs)
 ```
+#To call the function just for a column, it is necessary to use the code dataframe$column to indicate which column the function should run on, whereas to just run it on the dataframe the $column is not necessary. 
 
 ### Date objects
 
