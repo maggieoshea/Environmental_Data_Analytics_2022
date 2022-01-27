@@ -35,7 +35,7 @@ litter<-read.csv("/Users/maggieoshea/Desktop/Spring 2022/Data Analytics/Environm
 
 2. The neonicotinoid dataset was collected from the Environmental Protection Agency's ECOTOX Knowledgebase, a database for ecotoxicology research. Neonicotinoids are a class of insecticides used widely in agriculture. The dataset that has been pulled includes all studies published on insects. Why might we be interested in the ecotoxicologoy of neonicotinoids on insects? Feel free to do a brief internet search if you feel you need more background information. 
 
-> Answer: One application of this work, understanding the ecotoxicology of neonicotinoids on insects, is that these pesticides can have harmful implications for bees. Bees are not only ecologically important but also, one article argues, economically important. Some of the compounds in these pesticides are toxic to bees and can prove to be a strong threat to the pollinator which has both ecological and socio-economic implications. 
+> Answer: One application of this work, understanding the ecotoxicology of neonicotinoids on insects, is that these pesticides can have harmful implications for bees. Bees are not only ecologically important but also economically important. Some of the compounds in these pesticides are toxic to bees and can prove to be a strong threat to the pollinator which has both ecological and socio-economic implications. 
 **Source:** Decourtye, A. and Devillers, J. 2010. "Ecotoxicity of neonicotinoid insecticides to bees." *Advances in Experimental Medicine and Biology* 683: 85-95. doi: 10.1007/978-1-4419-6445-8_8.
 
 3. The Niwot Ridge litter and woody debris dataset was collected from the National Ecological Observatory Network, which collectively includes 81 aquatic and terrestrial sites across 20 ecoclimatic domains. 32 of these sites sample forest litter and woody debris, and we will focus on the Niwot Ridge long-term ecological research (LTER) station in Colorado. Why might we be interested in studying litter and woody debris that falls to the ground in forests? Feel free to do a brief internet search if you feel you need more background information. 
@@ -84,7 +84,7 @@ class(neonics$Conc.1..Author.)
 mode(neonics$Conc.1..Author.)
 ```
 
-> Answer: This column's class is "factor" which is a vector with numeric codes. This means that they are distinct from numeric because codes do not necessarily function as numeric that can be added/subtracted/etc. but rather are numeric values that represent something at the character level. Another example may be 0,1 indicating yes or no - these numbers represnt something at the character level (yes, no) and thus do not function like a typical numeric vector. 
+> Answer: This column's class is "factor" which is a vector with numeric codes. This means that they are distinct from numeric because codes do not necessarily function as numeric values that can be added/subtracted/etc, but rather are values that represent something. Another example may be 0,1 indicating yes or no - these numbers represent something at the character level (yes, no) and thus do not function like a typical numeric vector. 
 
 
 
@@ -107,7 +107,7 @@ ggplot(neonics) +
 
 Interpret this graph. What are the most common test locations, and do they differ over time?
 
-> Answer: The most commmon test locations are the "field natural" and lab locations. This graph shows that studies that use field artificial did peak in 2010, however are extremely rare compared to natural field and lab studies. Lab studies have increased significantly over time. Prior to 2005 natural field and lab studies had comparable number of studies, however by 2010 the number of lab studies far exceeded the number of natural field. For comparison, natural field studies appear to have peaked in 2010 at 500 studies while lab studies reached as high as 1000 studies around 2015. 
+> Answer: The most commmon test locations are the "field natural" and lab locations. This graph shows that studies that use field artificial did peak in 2010, however are extremely rare compared to natural field and lab studies. Lab studies have increased significantly over time. Prior to 2005 natural field and lab studies had comparable number of studies, however by 2010 the number of lab studies far exceeded the number of natural field. For comparison, natural field studies appear to have peaked in 2010 at 500 studies while lab studies reached as high as 1000 studies around 2015. This could indicate that research is trending towards more lab studies, though further analysis may be needed to determine this. 
 
 11. Create a bar graph of Endpoint counts. What are the two most common end points, and how are they defined? Consult the ECOTOX_CodeAppendix for more information. 
 
@@ -116,7 +116,7 @@ ggplot(neonics)+ aes(x = Endpoint) +
 geom_bar()+theme(axis.text = element_text(size = 8), axis.text.x = element_text(angle = 90))
 ```
 
-> Answer: The two most common endpoints are LOEL and NOEL. LOEL stands for the "Lowest-observable-effect-level" which is the lowest dose that produced effects in the study that were significantly different from the response of the controls. NOEL stands for "No-observable-effect-level" which is the highest dose that produced effects in the study that were not significantly different from the responses of the controls.
+> Answer: The two most common endpoints are LOEL and NOEL. LOEL stands for the "Lowest-observable-effect-level" which inidcates that the study had the lowest dose produce effects that were significantly different than the response from the controls. NOEL stands for "No-observable-effect-level" which indicates that the study had the highest dose that produced effects not have significantly different responses from that of the controls. 
 >
 
 ## Explore your data (Litter)
@@ -126,21 +126,21 @@ geom_bar()+theme(axis.text = element_text(size = 8), axis.text.x = element_text(
 class(litter$collectDate)
 #collectDate is not a date, but a factor. The values are listed as full year-month-day. 
 
-litter$collectDate <- as.Date(litter$collectDate, format = "%Y/%m/%d") 
+litter$collectDate <- as.Date(litter$collectDate, format = "%Y-%m-%d") 
+
 class(litter$collectDate)
 unique(litter$collectDate)
-
 ```
 > Answer: Litter was sampled on August 2nd and August 30th in 2018. 
 
 13. Using the `unique` function, determine how many plots were sampled at Niwot Ridge. How is the information obtained from `unique` different from that obtained from `summary`?
 
 ```{r}
-summary(litter$collectDate)
-unique(litter$collectDate)
+unique(litter$plotID)
+summary(litter$plotID)
 ```
 
-> Answer: When using summary with the code: summary(litter$collectDate) the information returned is the number of observations that have a certain value with each unique collect date. For example, summary returned that 91 observations were collected on August 2nd, 2018 and 97 were collected on August 30, 2018. In contrast, unique returns the values in a particular vector or dataframe that are unique, thus rather than showing the number of observations on a particular data it returns just the observations that are unique. In this case, the unique command returned two dates: August 2nd and August 30th, 2018. 
+> Answer: When using summary with the code: summary(litter$collectDate) the information returned is the number of observations that have a certain value with each unique plot. For example, summary returned that 20 observations were collected at the plot with ID NIWO_040, and 19 and plot NIWO_041. In contrast, unique returns the values in a particular vector or dataframe that are unique, thus rather than showing the number of observations that have this same observation it returns just the observations that are unique. In this case, the unique command returned 12 unique plot IDs, indicating that 12 plots were sampled at Niwot Ridge. 
 
 14. Create a bar graph of functionalGroup counts. This shows you what type of litter is collected at the Niwot Ridge sites. Notice that litter types are fairly equally distributed across the Niwot Ridge sites.
 ```{r}
@@ -161,7 +161,7 @@ ggplot(litter) +
 
 Why is the boxplot a more effective visualization option than the violin plot in this case?
 
-> Answer: The Boxplot is a more effective visualization because the violin plot helps to show how much data are in each distribution area. However, because it appears that there is often only one or few observations with the same dryMass value, the violin plot just produces straight lines that are difficult to glean information from. In contrast, the box plot shows more clearly key summary statistics such as the median, as well as the interquartile range and the maximum and minimum. 
+> Answer: The Boxplot is a more effective visualization because the violin plot relies on observations having the same value for, in this case, DryMass which is not the case in this dataset. Violin plots help to show how much data are in each distribution area, and may appear wider where many observations have a particular value. However, because it appears that there is often only one or few observations with the same dryMass value, the violin plot just produces straight lines that are difficult to glean information from. In contrast, the box plot does not change its width according to the number of observations at a particular value, and thus shows more clearly key summary statistics such as the median, as well as the interquartile range and the maximum and minimum. 
 
 What type(s) of litter tend to have the highest biomass at these sites? 
 
