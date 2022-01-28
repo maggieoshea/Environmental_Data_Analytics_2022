@@ -5,7 +5,7 @@ date: "Spring 2021"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
-  chunk_output_type: console
+  chunk_output_type: inline
 ---
 
 ## Objectives
@@ -17,7 +17,8 @@ editor_options:
 
 Today we will work with a dataset from the [North Temperate Lakes Long-Term Ecological Research Station](https://lter.limnology.wisc.edu/about/overview). The NTL-LTER is located in the boreal zone in northern Wisconsin, USA. We will use the [chemical and physical limnology dataset](https://lter.limnology.wisc.edu/content/cascade-project-north-temperate-lakes-lter-core-data-physical-and-chemical-limnology-1984), running from 1984-2016. 
 
-Opening discussion: why might we be interested in long-term observations of temperature, oxygen, and light in lakes?
+Opening discussion: why might we be interested in long-term observations of temperature, oxygen, and light in lakes? 
+This is because this type of data can provide insight to ecosystems and health of the lakes?
 
 > Add notes here: 
 
@@ -57,9 +58,22 @@ What is the best way to wrangle data? There are multiple ways to arrive at a spe
 ```{r, results = "hide"}
 vignette("dplyr")
 ```
+Work with rows: 
+- Filter --> chooses row based on column values
+- Slice --> chooses rows based on location 
+- Arrane --> changes the order of rows
+Work with columns: 
+- Select --> changes if column is included
+- rename --> reenames column 
+- Mutate --> creates new column 
+- Relocate --> changes order of columns
+Work with Groups of Rows: 
+- summarise --> collapses a group into a single row 
 
 ### Filter
-
+Keys for data wrangling: 
+- Comment your code
+- Make it reproducable 
 Filtering allows us to choose certain rows (observations) in our dataset.
 
 Here are the relevant commands used in the `filter` function. Add some notes to designate what these commands mean. 
@@ -74,7 +88,9 @@ Here are the relevant commands used in the `filter` function. Add some notes to 
 
 ```{r}
 class(NTL.phys.data$lakeid)
+#Factor
 class(NTL.phys.data$depth)
+#Numeric
 
 # matrix filtering
 NTL.phys.data.surface1 <- NTL.phys.data[NTL.phys.data$depth == 0,]
@@ -83,7 +99,7 @@ NTL.phys.data.surface1 <- NTL.phys.data[NTL.phys.data$depth == 0,]
 NTL.phys.data.surface2 <- filter(NTL.phys.data, depth == 0)
 NTL.phys.data.surface3 <- filter(NTL.phys.data, depth < 0.25)
 
-# Did the methods arrive at the same result?
+# Did the methods arrive at the same result? --> yes
 head(NTL.phys.data.surface1)
 dim(NTL.phys.data.surface1)
 head(NTL.phys.data.surface2)
@@ -94,6 +110,8 @@ dim(NTL.phys.data.surface3)
 # Choose multiple conditions to filter
 summary(NTL.phys.data$lakename)
 NTL.phys.data.PeterPaul1 <- filter(NTL.phys.data, lakename == "Paul Lake" | lakename == "Peter Lake")
+
+#!= Will remove the lakes you don't want, rather than selecting the ones you want 
 NTL.phys.data.PeterPaul2 <- filter(NTL.phys.data, lakename != "Central Long Lake" & 
                                      lakename != "Crampton Lake" & lakename != "East Long Lake" &
                                      lakename != "Hummingbird Lake" & lakename != "Tuesday Lake" &
@@ -104,22 +122,26 @@ NTL.phys.data.PeterPaul3 <- filter(NTL.phys.data, lakename %in% c("Paul Lake", "
 summary(NTL.phys.data$daynum)
 NTL.phys.data.JunethruOctober1 <- filter(NTL.phys.data, daynum > 151 & daynum < 305)
 NTL.phys.data.JunethruOctober2 <- filter(NTL.phys.data, daynum > 151, daynum < 305)
+#Using >= or <= makes sure the value you listed is included 
 NTL.phys.data.JunethruOctober3 <- filter(NTL.phys.data, daynum >= 152 & daynum <= 304)
+
+#%in% is a value matching operator so it will look at the values within the range you give
 NTL.phys.data.JunethruOctober4 <- filter(NTL.phys.data, daynum %in% c(152:304))
 
 # Exercise: 
 # filter NTL.phys.data for the year 1999
-# what code do you need to use, based on the class of the variable?
+# what code do you need to use, based on the class of the variable? I used filter, value == 
 class(NTL.phys.data$year4)
+NTL.phys.data.1999<- filter(NTL.phys.data, year4 == 1999)
 
 # Exercise: 
 # filter NTL.phys.data for Tuesday Lake from 1990 through 1999.
-
+NTL.phys.data.TuesLake9099<- filter(NTL.phys.data, year4 %in% c(1990:1999), lakename == "Tuesday Lake")
 
 ```
 Question: Why don't we filter using row numbers?
 
-> Answer: 
+> Answer: Because that's not a column in the dataset, so you cannot filter by it. It also isn't good practice because if someone were to replicate your methods they would not know why you were doing it whereas if you filter by the dates, they know you want only observations within a set of dates. 
 
 ### Arrange
 
@@ -132,8 +154,8 @@ NTL.phys.data.depth.descending <- arrange(NTL.phys.data, desc(depth))
 # Exercise: 
 # Arrange NTL.phys.data by temperature, in descending order. 
 # Which dates, lakes, and depths have the highest temperatures?
-
-
+NTL.phys.data.temparrange <- arrange(NTL.phys.data, desc(temperature_C))
+#East Long Lake has the highest temperatures at a depth of 0.5, in 1998. Broadly, the smaller depths had warmer temperatures. Hummingbird Lake also had a number of high temperature recordings. 
 ```
 ### Select
 
@@ -196,5 +218,6 @@ write.csv(NTL.phys.data.PeterPaul1, row.names = FALSE, file = "./Data/Processed/
 ## Closing Discussion
 
 When we wrangle a raw dataset into a processed dataset, we create a code file that contains only the wrangling code. We then save the processed dataset as a new spreadsheet and then create a separate code file to analyze and visualize the dataset. Why do we keep the wrangling code separate from the analysis code?
+> Because wrangling code can be long and complicated and keeping it all in one gets easily messy. 
 
 
