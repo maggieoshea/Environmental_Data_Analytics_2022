@@ -123,6 +123,7 @@ In dplyr, there are several types of join functions:
 
 * `inner_join`: return rows in x where there are matching values in y, and all columns in x and y (mutating join).
 * `semi_join`: return all rows from x where there are matching values in  y, keeping just columns from x (filtering join).
+> note: Good for if there are lots of NAs ?
 * `left_join`: return all rows from x, and all columns from x and y (mutating join).
 * `anti_join`: return all rows from x where there are *not* matching values in y, keeping just columns from x (filtering join).
 * `full_join`: return all rows and all columns from x and y. Returns NA for missing values (mutating join).

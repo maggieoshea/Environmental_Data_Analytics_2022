@@ -5,7 +5,7 @@ date: "Spring 2022"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
-  chunk_output_type: console
+  chunk_output_type: inline
 ---
 
 ## Objectives
@@ -27,7 +27,7 @@ getwd()
 library(tidyverse)
 #install.packages(lubridate)
 library(lubridate)
-NTL.phys.data <- read.csv("./Data/Raw/NTL-LTER_Lake_ChemistryPhysics_Raw.csv", stringsAsFactors = TRUE)
+NTL.phys.data <- read.csv("/Users/maggieoshea/Desktop/Spring 2022/Data Analytics/Environmental_Data_Analytics_2022/Data/Raw/NTL-LTER_Lake_ChemistryPhysics_Raw.csv", stringsAsFactors = TRUE)
 
 class(NTL.phys.data$sampledate)
 # Format sampledate as date
@@ -56,11 +56,16 @@ NTL.phys.data.JunethruOctober <- filter(NTL.phys.data, daynum %in% c(152:304))
 
 # Exercise 1: 
 # filter NTL.phys.data for the year 1999
+class(NTL.phys.data$year4)
+NTL.phys.data.1999 <- filter(NTL.phys.data, year4 == 1999)
 # what code do you need to use, based on the class of the variable?
+# Because it is an integer and we are selecting only one year, the easiest code is filter. 
+
 
 
 # Exercise 2: 
 # filter NTL.phys.data for Tuesday Lake from 1990 through 1999.
+NTL.phys.data.1990to1999 <- filter(NTL.phys.data, year4 %in% c(1990:1999))
 
 
 ```
@@ -83,12 +88,21 @@ NTL.phys.data.processed <-
 
 #Exercise 3: Using a pipe filter NTL.phys.data for Tuesday Lake from 1990 through 1999 only for July 
 
-
+NTL.phys.data.Tuesday1990to1999<-
+  NTL.phys.data %>% 
+  filter(lakename == "Tuesday Lake") %>%
+  filter(year4 %in% c(1990:1999))
 
 
 
 #Exercise 4: Using the data from part 3, a pipe and the summarise() function find the mean surface temperature (hints: you will need to add another filter for depth==0). Make sure you eliminate NAs before computing the means
-
+NTL.TuesdayLake.summaries <- 
+  NTL.phys.data.Tuesday1990to1999 %>%
+  filter(depth == 0) %>%
+  group_by(year4) %>%
+  filter(!is.na(temperature_C)) %>%
+  summarise(meantemp = mean(temperature_C), 
+            sdtemp = sd(temperature_C))
   
 ```
 
@@ -98,9 +112,12 @@ For gather we will use `pivot_longer` and for spread we will use `pivot_wider`.
 
 ```{r}
 #Exercise 5: gather irradiance data (measured in the water column and measured on the deck of the sampling boat) into one column using pivot_longer
-
+NTL.irradiance.gathered <- pivot_longer(NTL.phys.data, irradianceWater:irradianceDeck, names_to = "irradiance", values_to = "sample")
 
 #Exercise 6: spread temperatureC into more than one column based on the depth
+NTL.irradiance.spread <- pivot_wider(NTL.phys.data, names_from = depth, values_from = temperature_C)
 
+#Is there a way to spread such that rather than column for each depth, you can group like depth is greater than 0.5 etc 
+#Also is there a way to say get the names from depth and temperature from C and if row has NA under depth values can you make those 0 instead of resulting in NA in the code itself (of course can do it after)
 ```
 
