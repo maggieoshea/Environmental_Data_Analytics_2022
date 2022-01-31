@@ -91,7 +91,8 @@ NTL.phys.data.processed <-
 NTL.phys.data.Tuesday1990to1999<-
   NTL.phys.data %>% 
   filter(lakename == "Tuesday Lake") %>%
-  filter(year4 %in% c(1990:1999))
+  filter(year4 %in% c(1990:1999)) %>%
+  filter(month(sampledate)==7)
 
 
 
