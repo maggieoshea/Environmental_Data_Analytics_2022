@@ -123,7 +123,7 @@ write.csv(pm25.2019_select, row.names = FALSE,
 10. Call up the dimensions of your new tidy dataset.
 11. Save your processed dataset with the following file name: "EPAair_O3_PM25_NC2122_Processed.csv"
 
-```{r, warning=FALSE}
+```{r, warning=FALSE, message = FALSE}
 #7
 colnames(o32018_select)
 colnames(o32019_select)
@@ -181,19 +181,27 @@ write.csv(airpollution.summaries, row.names = FALSE,
 13. Call up the dimensions of the summary dataset.
 
 
-```{r, warning=FALSE}
+```{r, warning=FALSE, message=FALSE}
 #12(a,b)
-summarize.airpollution<- summary.spread %>%
-  group_by(Month, Site.Name, Year) %>%
+summarize.airpollution.12a<- summary.spread %>%
+  group_by(Site.Name, Month, Year) %>%
+  summarise(mean_o3 = mean(Ozone), 
+            mean_pm25 = mean(PM2.5))
+
+summarize.airpollution.12b<-summary.spread %>%
+  group_by(Site.Name, Month, Year) %>%
   summarise(mean_o3 = mean(Ozone), 
             mean_pm25 = mean(PM2.5))%>%
   filter(!is.na(mean_o3) & !is.na(mean_pm25))
 
+#Note: Despite filtering only where Ozone and PM 2.5 are both NA (*note the &). 
+# My resulting dataframe for 12b had no NAs in either the Ozone or PM 2.5 column. 
 
 #13
-dim(summarize.airpollution)
+dim(summarize.airpollution.12a)
+dim(summarize.airpollution.12b)
 ```
 
 14. Why did we use the function `drop_na` rather than `na.omit`?
 
-> Answer: "Drop_na" drops the rows that have missing values and only keeps the rows that are complete with no values of NA when running the function, whereas na.omit removes them all together. 
+> Answer: I ultimately used filter(!is.na()) because this allowed me to remove rows where both mean_03 and mean_pm25 were NA, rather than drop_na or na_omit where I could only remove rows where one, the other, or both were NA not just where both were.  

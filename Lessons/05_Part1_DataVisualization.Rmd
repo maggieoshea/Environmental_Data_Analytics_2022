@@ -21,14 +21,14 @@ Effective data visualization depends on purposeful choices about graph types. Th
 ```{r, message = FALSE, warning = FALSE}
 getwd()
 library(tidyverse)
-#install.packages("ggridges")
+install.packages("ggridges")
 library(ggridges)
 
 PeterPaul.chem.nutrients <- 
   read.csv("./Data/Processed/NTL-LTER_Lake_Chemistry_Nutrients_PeterPaul_Processed.csv", stringsAsFactors = TRUE)
 PeterPaul.chem.nutrients.gathered <-
   read.csv("./Data/Processed/NTL-LTER_Lake_Nutrients_PeterPaulGathered_Processed.csv", stringsAsFactors = TRUE)
-EPAair <- read.csv("./Data/Processed/EPAair_O3_PM25_NC2021_Processed.csv", stringsAsFactors = TRUE)
+EPAair <- read.csv("../Data/Processed/EPAair_O3_PM25_NC2021_Processed.csv", stringsAsFactors = TRUE)
 
 EPAair$Date <- as.Date(EPAair$Date, format = "%Y-%m-%d")
 PeterPaul.chem.nutrients$sampledate <- as.Date(PeterPaul.chem.nutrients$sampledate, format = "%Y-%m-%d")
@@ -45,6 +45,7 @@ ggplot has only a few rules:
 * A data frame must be specified within the `ggplot()` function. Additional datasets can be specified in subsequent layers.
 * Aesthetics must be specified, most commonly x and y variables but including others. Aesthetics can be specified in the `ggplot()` function or in subsequent layers.
 * Additional layers must be specified to fill the plot. 
+# FIll vs. Color = Different! 
 
 ### Geoms
 
@@ -64,6 +65,7 @@ Here are some commonly used layers for plotting in ggplot:
 * geom_area
 * geom_abline (plus geom_hline and geom_vline)
 * geom_text
+> Note: Each one is an added layerr 
 
 ### Aesthetics
 Here are some commonly used aesthetic types that can be manipulated in ggplot: 
@@ -73,6 +75,7 @@ Here are some commonly used aesthetic types that can be manipulated in ggplot:
 * shape
 * size
 * transparency
+#Note: if you are plotting many variables together than should do aesthetics for all layers/variables on the plot
 
 ### Plotting continuous variables over time: Scatterplot and Line Plot
 
@@ -80,6 +83,7 @@ Here are some commonly used aesthetic types that can be manipulated in ggplot:
 # Scatterplot
 ggplot(EPAair, aes(x = Date, y = Ozone)) + 
   geom_point()
+#Data frame always the first thing in your ggplot --> has to be a dataframe for ggplot! 
 
 O3plot <- ggplot(EPAair) +
   geom_point(aes(x = Date, y = Ozone))
@@ -105,7 +109,7 @@ PMplot.faceted <-
   facet_wrap(vars(Site.Name), nrow = 3)
 print(PMplot.faceted)
 
-# Filter dataset within plot building and facet by multiple variables
+# Filter dataset within plot building and facet by multiple variables --> usually better to filter before but can use subset if needed
 PMplot.faceted2 <- 
   ggplot(subset(EPAair, Site.Name == "Clemmons Middle" | Site.Name == "Leggett" |
                   Site.Name == "Bryson City"), 

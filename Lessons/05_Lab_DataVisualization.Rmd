@@ -13,6 +13,7 @@ editor_options:
 2. Answer questions on M5 videos
 3. Additional comments on videos - expression() and saving plot
 4. Perform simple data visualizations in the R package `ggplot`
+#data-to-viz.com --> decision tree plot for data visualization
 
 ## Expression function and Saving plots
 
@@ -22,10 +23,11 @@ The expression function can be used when you want to add mathematical symbols an
 Plot_text <-
 ggplot(data=data.frame(x=0,y=0))+
   geom_point(aes(x=x,y=y)) +
-  geom_text(x=0,y=0.025,label=expression(paste("Mean is ", mu,",", R^{2},'=0.6')))
+  geom_text(x=-0.025,y=0.025,label=expression(paste("Mean is ", mu,", ", R^{2},'=0.6')))
+#geom_text is how you can put words on your plot. Note how you can also do super script
 print(Plot_text)
 
-ggsave("./Output/Plot_text.jpg",Plot_text, height = 4, width = 6, units = "in", dpi = 300)
+  ggsave("../Output/Plot_text.jpg",Plot_text, height = 4, width = 6, units = "in", dpi = 300)
 
 ```
 
@@ -40,10 +42,10 @@ library(RColorBrewer)
 library(colormap)
 
 PeterPaul.chem.nutrients <- 
-  read.csv("./Data/Processed/NTL-LTER_Lake_Chemistry_Nutrients_PeterPaul_Processed.csv", stringsAsFactors = TRUE)
-EPAair <- read.csv("./Data/Processed/EPAair_O3_PM25_NC1819_Processed.csv", stringsAsFactors = TRUE)
+  read.csv("../Data/Processed/NTL-LTER_Lake_Chemistry_Nutrients_PeterPaul_Processed.csv", stringsAsFactors = TRUE)
+EPAair2 <- read.csv("../Data/Processed/EPAair_O3_PM25_NC2122_Processed.csv", stringsAsFactors = TRUE)
 
-EPAair$Date <- as.Date(EPAair$Date, format = "%Y-%m-%d")
+EPAair2$Date <- as.Date(EPAair2$Date, format = "%Y-%m-%d")
 PeterPaul.chem.nutrients$sampledate <- as.Date(PeterPaul.chem.nutrients$sampledate, format = "%Y-%m-%d")
 
 ```
@@ -56,17 +58,29 @@ Exercise: build your own scatterplots of PeterPaul.chem.nutrients
 ```{r, fig.height = 3, fig.width = 4, warning = FALSE}
 
 # 1. 
-# Plot surface temperatures by day of  year. 
+# Plot surface temperatures by day of year. 
 # Color your points by year, and facet by lake in two rows.
 # Change the ylab name
 
+#Notes: have to subset where depth = 0 because it's surface temperatures; ylab is changing the y axis name
+surfacetemps <- ggplot(subset(PeterPaul.chem.nutrients, depth==0), aes(x = daynum, y = temperature_C)) + 
+  geom_point(aes(color=year4))+
+  facet_wrap(vars(lakename), nrow = 2)+
+  ylab("Surface Temperature")+
+  xlab("Day of the Year (1 = January 1st)")
+print(surfacetemps)
 
 #2. 
 # Plot temperature by date. Color your points by depth.
 # Change the size of your point to 0.5
 # Change the color palette to magma and play with direction (+- 1), which one makes more sense?
 # Change x axis to include marker/labels every 5 years
-
+ggplot(PeterPaul.chem.nutrients, aes(x = sampledate, y = temperature_C))+
+  geom_point(aes(color=depth), size = 0.5) + 
+  ylab("Temperature in Celsius")+
+  scale_color_viridis(option="inferno", direction = -1)+
+  scale_x_date(
+    date_breaks = "5 years", date_labels = "%Y")
 
 
 
@@ -81,8 +95,16 @@ Exercise: Plot relationships between air quality measurements
 # Plot AQI values for ozone by PM2.5, colored by latitude 
 # Make the points 50 % transparent
 # Add a line of best fit for the linear regression of these variables.
+#transparency = alpha 
 
+EPA_pivot<-pivot_wider(EPAair2, 
+                              names_from = AQS_PARAMETER_DESC,
+                              values_from = mean_AQI)
 
+ggplot(EPA_pivot, aes(x = PM2.5, y = Ozone))+
+      geom_point(aes(color=mean_lat), alpha=0.5) +
+  geom_smooth(method = lm)+
+  ylab(expression)
 
 
 ```

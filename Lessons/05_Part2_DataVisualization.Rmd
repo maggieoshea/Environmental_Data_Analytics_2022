@@ -125,6 +125,8 @@ Does your color palette communicate additional and necessary information? If the
 
 Perception is key! Choose palettes that are visually pleasing and will communicate what you are hoping your audience to perceive.
 
+https://www.nceas.ucsb.edu/sites/default/files/2020-04/colorPaletteCheatsheet.pdf
+
 RColorBrewer (package)
 
 * http://colorbrewer2.org
@@ -206,7 +208,7 @@ In situations where facets don't fill our needs to place multiple plots on a pag
 A useful guide for aligning plots by axis can be found here: https://wilkelab.org/cowplot/articles/aligning_plots.html
 
 ```{r, fig.height = 7, fig.width = 6}
-#install.packages("cowplot")
+install.packages("cowplot")
 library(cowplot)
 plot_grid(NvsP2, Nutrientplot, nrow = 2, align = 'h', rel_heights = c(1.25, 1))
 
