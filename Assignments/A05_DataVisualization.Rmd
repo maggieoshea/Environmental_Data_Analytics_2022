@@ -31,13 +31,22 @@ the processed data file for the Niwot Ridge litter dataset (use the [`NEON_NIWO_
 
 2. Make sure R is reading dates as date format; if not change the format to date.
 
-```{r}
+```{r, message = FALSE}
 #1 
 getwd()
+#Installed ggplot separately because of problem with knitting
 library(tidyr)
 library(cowplot)
-peterpaulchemistry<-read.csv("../Data/Processed/NTL-LTER_Lake_Chemistry_Nutrients_PeterPaul_Processed.csv", stringsAsFactors = TRUE)
-litter.masstrap<- read.csv("../Data/Processed/NEON_NIWO_Litter_mass_trap_Processed.csv", stringsAsFactors = TRUE)
+library(viridis)
+library(RColorBrewer)
+library(colormap)
+library(ggplot2)
+
+peterpaulchemistry<-read.csv("../Data/Processed/NTL-LTER_Lake_Chemistry_Nutrients_PeterPaul_Processed.csv", 
+  stringsAsFactors = TRUE)
+
+litter.masstrap<- read.csv("../Data/Processed/NEON_NIWO_Litter_mass_trap_Processed.csv",
+  stringsAsFactors = TRUE)
 
 #2 
 class(litter.masstrap$collectDate)
@@ -50,7 +59,7 @@ litter.masstrap$collectDate <- as.Date(litter.masstrap$collectDate, format = "%Y
 ## Define your theme
 3. Build a theme and set it as your default theme.
 
-```{r}
+```{r, message = FALSE}
 #3
 A5theme <- theme_gray(base_size = 14) +
   theme(axis.text = element_text(color = "black"), 
@@ -64,11 +73,11 @@ For numbers 4-7, create ggplot graphs and adjust aesthetics to follow best pract
 
 4. [NTL-LTER] Plot total phosphorus (`tp_ug`) by phosphate (`po4`), with separate aesthetics for Peter and Paul lakes. Add a line of best fit and color it black. Adjust your axes to hide extreme values (hint: change the limits using `xlim()` and `ylim()`).
 
-```{r}
+```{r, warning=FALSE, message = FALSE}
 #4
 ggplot(peterpaulchemistry, aes(x = tp_ug, y = po4)) + 
   geom_point(aes(color=lakename))+
-  labs(y= "Phosphate (ug/L)", x = "Phosphorous (ug/L)")+
+  labs(y= "Phosphate (µg/L)", x = "Phosphorous (µg/L)")+
   geom_smooth(method = lm, color="black")+
   xlim(0, 75) +
   ylim(0, 75)
@@ -78,38 +87,40 @@ ggplot(peterpaulchemistry, aes(x = tp_ug, y = po4)) +
 
 5. [NTL-LTER] Make three separate boxplots of (a) temperature, (b) TP, and (c) TN, with month as the x axis and lake as a color aesthetic. Then, create a cowplot that combines the three graphs. Make sure that only one legend is present and that graph axes are aligned.
 
-```{r}
+```{r, warning=FALSE, message = FALSE}
 #5
 #Individual box plots 
 temperature <-
   ggplot(peterpaulchemistry, aes(x = month, y = temperature_C, color=lakename)) +
   geom_boxplot()+ 
-  theme(legend.position = "bottom")+
-  scale_x_discrete(name ="Month", 
+  labs(y= "Temperature ºC", x = "Month")+
+  scale_x_discrete( 
                     limits=c("1","2","3", "4", "5", "6", "7", "8", "9", "10", "11", "12"))
 print(temperature)
 
 TP <-
   ggplot(peterpaulchemistry, aes(x = month, y = tp_ug, color=lakename)) +
   geom_boxplot()+ 
-  scale_x_discrete(name ="Month", 
+  labs(y="Phosphorous (µg/L)", x="Month")+
+  scale_x_discrete( 
                     limits=c("1","2","3", "4", "5", "6", "7", "8", "9", "10", "11", "12"))
 print(TP)
 
 TN <-
   ggplot(peterpaulchemistry, aes(x = month, y = tn_ug, color=lakename)) +
   geom_boxplot()+ 
-  scale_x_discrete(name ="Month", 
+  labs(y="Nitrogen (µg/L)", x="Month")+
+  scale_x_discrete(
                     limits=c("1","2","3", "4", "5", "6", "7", "8", "9", "10", "11", "12"))
 print(TN)
 
-# Combination with one legend: Include legend in only 1 chart
+# Combination with one legend
 
 plot_grid(TP + 
   theme(legend.position="none"), 
   TN+ 
   theme(legend.position="none"), 
-  temperature, 
+  temperature+theme(legend.position = "bottom"), 
   nrow = 2, rel_heights= c(4, 4, 6), rel_widths = c(3, 3, 3))
 
 
@@ -117,23 +128,25 @@ plot_grid(TP +
 
 Question: What do you observe about the variables of interest over seasons and between lakes? 
 
-> Answer: For each of the variables, the observations for Paul Lake are concentrated near month 6 (June) and for Peter Lake near August (8). This is more true for the TN and TP observations, with temperature observations ranging from mid-May to July for Paul Lake and from August to mid-October for Peter Lake. 
+> Answer: For each of the variables, the observations for Paul Lake are concentrated near month 6 (June) and for Peter Lake near August (8). This is more true for the nitrogen and phosphorous observations, with temperature observations ranging from mid-May to July for Paul Lake and from August to mid-October for Peter Lake. While temperature does not have outliers, both nitrogen and phosphorous have outliers in both Peter and Paul Lake. The outliers are concentrated above the median, with only one outlier below the median for phosphorous and none for nitrogen. 
 
 6. [Niwot Ridge] Plot a subset of the litter dataset by displaying only the "Needles" functional group. Plot the dry mass of needle litter by date and separate by NLCD class with a color aesthetic. (no need to adjust the name of each land use)
 
 7. [Niwot Ridge] Now, plot the same plot but with NLCD classes separated into three facets rather than separated by color. 
 
-```{r}
+```{r, message = FALSE}
 #6
   ggplot(subset(litter.masstrap, functionalGroup == "Needles"), 
-         aes(x = dryMass, y = collectDate)) + 
+         aes(x = collectDate, y = dryMass)) + 
+        labs(y= "Dry Mass (g)", x = "Date of Collection")+
   geom_point(aes(color=nlcdClass)) 
 
 #7
   ggplot(subset(litter.masstrap, functionalGroup == "Needles"), 
-         aes(x = dryMass, y = collectDate)) + 
-  geom_point() +
-  facet_wrap(vars(nlcdClass), nrow = 3)
+      aes(x = collectDate, y = dryMass)) + 
+      labs(y= "Dry Mass (g)", x = "Date of Collection")+
+      geom_point() +
+      facet_wrap(vars(nlcdClass), nrow = 3)
 
 ```
 Question: Which of these plots (6 vs. 7) do you think is more effective, and why? 
