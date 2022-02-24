@@ -5,7 +5,7 @@ date: "Spring 2022"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
-  chunk_output_type: console
+  chunk_output_type: inline
 ---
 
 ## Objectives
@@ -80,6 +80,8 @@ summary(irradiance.regression)
 
 # Correlation
 cor.test(PeterPaul.chem.nutrients$irradianceWater, PeterPaul.chem.nutrients$depth)
+
+#Want the mean of the errors to be zero because if not, it means the regression is bias because it's always overestimating or underestimating --> of course it will fluctuate but want to have the mean at zero
 ```
 Question: How would you report the results of this test (overall findings and report of statistical output)?
 
@@ -133,6 +135,7 @@ irradiancebydepth2 <-
   ggplot(PeterPaul.chem.nutrients, aes(x = depth, y = irradianceWater)) +
   geom_smooth(method = "lm") +
   scale_y_log10() +
+  #scale y log makes the log the y axis
   geom_point() 
 print(irradiancebydepth2) 
 
@@ -179,8 +182,11 @@ PeterPaulnutrients <-
   select(tn_ug:po4) %>%
   na.omit()
 PeterPaulCorr <- cor(PeterPaulnutrients)
+#Open this and it will tell you the correlation values
 corrplot(PeterPaulCorr, method = "ellipse")
+#Oval shapes represent scatterplot of one variable against the other, so the thinner the scatterplot the higher the approximation. The color is a strong but negative correlation (red) vs. dark blue is a strong positive correlation
 corrplot.mixed(PeterPaulCorr, upper = "ellipse")
+#Mix shows the corr value as well as the ellipses 
 ```
 
 ## AIC to select variables
@@ -199,6 +205,7 @@ TPAIC <- lm(data = Paul.naomit, tp_ug ~ depth + dissolvedOxygen +
 
 #Choose a model by AIC in a Stepwise Algorithm
 step(TPAIC)
+#For each one it says when you remove variable (like po4 for ex), you get a different AIC --> higher AIC is worse 
 TPmodel <- lm(data = Paul.naomit, tp_ug ~ dissolvedOxygen + temperature_C + tn_ug)
 summary(TPmodel)
 

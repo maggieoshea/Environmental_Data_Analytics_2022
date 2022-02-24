@@ -5,7 +5,7 @@ date: "Spring 2022"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
-  chunk_output_type: console
+  chunk_output_type: inline
 ---
 
 ## Objectives
@@ -19,7 +19,7 @@ library(tidyverse)
 #install.packages("agricolae")
 library(agricolae)   #you may need to install/update package "htmltools" before installing and loading agricolae
 
-Litter <- read.csv("./Data/Processed/NEON_NIWO_Litter_mass_trap_Processed.csv", stringsAsFactors = TRUE)
+Litter <- read.csv("../Data/Processed/NEON_NIWO_Litter_mass_trap_Processed.csv", stringsAsFactors = TRUE)
 
 # Set date to date format
 Litter$collectDate <- as.Date(Litter$collectDate , format = "%Y-%m-%d")
@@ -34,6 +34,21 @@ theme_set(mytheme)
 ### One-way ANOVA
 A one-way ANOVA is used when you have one categorical explanatory variable with more than two categories. In R, we can run the model with the function `lm` or `aov`, the latter of which will allow us to run post-hoc tests to determine pairwise differences.
 
+**ANOVA HYPOTHESES**
+Used to determine whether three or more populations have equal means. 
+Null hypothesis is that the means are equal 
+Alternative Hypothesis is that not all are equal
+
+Definitions: Factor: quantity under examination in experiment as possible cause of variation
+Levels: categories/strata of factor of interest (also called population)
+Balance Design: All factor levels have equal sample size
+
+**Assumptions:**
+1. Populations normally distributed
+2. Population variances are equal 
+3. Observations are independent (the occurrence of any one individual value does not affect the probability that any other observation will occur)
+
+
 Does total litter biomass differ among sites at the Niwot Ridge LTER?
 ```{r}
 # Wrangle the data
@@ -44,56 +59,77 @@ Litter.Totals <- Litter %>%
 summary(Litter.Totals)
 #check all value of plotID
 summary(Litter.Totals$plotID)
+#Not all balanced because different number of observations in each level but can still run test
 
 # Test for normality. 
 # Note: the important assumption for GLMs is normality of residuals, 
 # not necessarily normality of raw data. See below when we plot the model.
 # shapiro.test() performs the Shapiro-Wilk test of the null that data follows a normal distribution
+# If p-value <0.001 then reject null that the data is normal
 
 shapiro.test(Litter.Totals$dryMass[Litter.Totals$plotID == "NIWO_040"])
+#Not Normal Distribution 
 shapiro.test(Litter.Totals$dryMass[Litter.Totals$plotID == "NIWO_041"])
+#Not Normal
 shapiro.test(Litter.Totals$dryMass[Litter.Totals$plotID == "NIWO_046"])
+#Cannot reject null! 
 shapiro.test(Litter.Totals$dryMass[Litter.Totals$plotID == "NIWO_047"])
 shapiro.test(Litter.Totals$dryMass[Litter.Totals$plotID == "NIWO_051"])
 shapiro.test(Litter.Totals$dryMass[Litter.Totals$plotID == "NIWO_057"])
+#Cannot reject null!
 shapiro.test(Litter.Totals$dryMass[Litter.Totals$plotID == "NIWO_058"])
 shapiro.test(Litter.Totals$dryMass[Litter.Totals$plotID == "NIWO_061"])
 shapiro.test(Litter.Totals$dryMass[Litter.Totals$plotID == "NIWO_062"])
 shapiro.test(Litter.Totals$dryMass[Litter.Totals$plotID == "NIWO_063"])
 shapiro.test(Litter.Totals$dryMass[Litter.Totals$plotID == "NIWO_064"])
 shapiro.test(Litter.Totals$dryMass[Litter.Totals$plotID == "NIWO_067"])
+#Format is the dependent variable, then [] brackets with the factor/level
+#Most are not normal according to Shapiro-Wilkes, but can still run test
 
 #results: reject null in all except two: NIWO_057 and NIWO_046
 qqnorm(Litter.Totals$dryMass); qqline(Litter.Totals$dryMass)
+
+#Again shows not normal
 
 # Test for equal variance
 # ANOVA is robust against departures from equal variance.
 # bartlett.test() performs Bartlett's test of the null that the variances in each of the groups (samples) are the same.
 bartlett.test(Litter.Totals$dryMass ~ Litter.Totals$plotID)
+#The p-value is less than 0.05 so reject the null, so the variances are not equal 
 
 #results: reject null i.e. variances are not equal
 
 # Format ANOVA as aov
 Litter.Totals.anova <- aov(data = Litter.Totals, dryMass ~ plotID)
 summary(Litter.Totals.anova)
+#Sum of squares (difference between overall mean and each one of the values..deviation from each observation from mean); Mean square= sum square divided by DF; F-value is mean squares of plotID divided by mean square of residuals)
+#Reject the null so the sites do not have all the same mean of dryMass
 
 #results: reject null hypothesis i.e. difference between a pair of group means is statiscally significant
 
 # Format ANOVA as lm
 Litter.Totals.anova2 <- lm(data = Litter.Totals, dryMass ~ plotID)
 summary(Litter.Totals.anova2)
+#Main difference between aov and lm code is the output table --> lm has row for each categorical value 
+#There is one plot missing which is represented by the intercept --> so each other estimate is the intercept estimate + the estimate. So plot 041 is 15.86+1.299
 
 # Checking model fit and assumptions
 # ANOVA is robust against departures from normality.
 plot(Litter.Totals.anova2)
 
 # Post-hoc test
-# TukeyHSD() computes Tukey Honest Significant Differences
+# TukeyHSD() computes Tukey Honest Significant Differences compares all possible grou pairings
+#Maybe all the variables are not the same but can you group them --> group them into similar clusters 
 TukeyHSD(Litter.Totals.anova)
+#The argument is the result of an anova test
+#They have for each possible site, they have the difference of the means, lower and upper end points of confidence interval, and p-value 
+#pairwise comparison for each one
 
 # Extract groupings for pairwise relationships
 Litter.Totals.groups <- HSD.test(Litter.Totals.anova, "plotID", group = TRUE)
 Litter.Totals.groups
+#this one looks for exact groupings rather than TukeyHSD which just does pairwise for all of them
+#Groups with the same letter, are not significantly different. So all those with a in them, they all have the same mean 
 
 # Graph the results
 Litter.Totals.plot <- ggplot(Litter.Totals, aes(x = plotID, y = dryMass)) +
@@ -104,12 +140,14 @@ Litter.Totals.plot <- ggplot(Litter.Totals, aes(x = plotID, y = dryMass)) +
                          "d", "abcd", "cd", "d", "abcd", "abcd")) +
   labs(x = "Plot ID", y = "Dry Mass (g)") +
   ylim(0, 85)
+
+#The text for stat summary is labels based on the litter total groups from HSD test, she put them in the order that the plots appear so 40, and 41 are first and have group labels abc, ab. 
 print(Litter.Totals.plot)
 ```
 
 What information does the output give us? How might we report this information in a report?
 
-> 
+> The output is telling us the median and distribution of each plot site. However it also includes the plot group labels (a, ab, abcd, etc.) such that the viewer can see that those with the letter a in the label all have the same mean, as is true for b, c, and d as well. 
 
 ## TWO-WAY ANOVA
 ### Main effects
@@ -119,6 +157,7 @@ A two-way ANOVA allows us to examine the effects of two categorical explanatory 
 # Format as aov
 Litter.anova.2way <- aov(data = Litter, dryMass ~ functionalGroup + nlcdClass)
 summary(Litter.anova.2way)
+#reject the null hypothesis, the mean across all groups are different
 
 # Format as lm
 Litter.anova.2way2 <- lm(data = Litter, dryMass ~ functionalGroup + nlcdClass)
@@ -132,12 +171,13 @@ TukeyHSD(Litter.anova.2way)
 ### Interaction effects
 We may expect the effects of functional group and land cover to be dependent on each other. For instance, we may expect needle biomass to be larger in evergreen forests than in other land types. In this case, we might choose to run an interaction effects two-way ANOVA, which will examine the individual effects of the explanatory variables as well as the interaction of the explanatory variables.
 
-The output gives test statistics for each explanatory variable as well as the interaction effect of the explanatory variables. If the p-value for the interaction effect is less than 0.05, then we would consider the interaction among the explanatory variables to be significant.
+The output gives **test statistics for each explanatory variable as well as the interaction effect of the explanatory variables.** If the p-value for the interaction effect is less than 0.05, then we would consider the interaction among the explanatory variables to be significant.
 
 ```{r}
 # Format as aov
 Litter.anova.2way3 <- aov(data = Litter, dryMass ~ functionalGroup * nlcdClass)
 summary(Litter.anova.2way3)
+#The interaction is statistically significant
 
 # Format as lm
 Litter.anova.2way4 <- lm(data = Litter, dryMass ~ functionalGroup * nlcdClass)
@@ -149,12 +189,15 @@ If the interaction is significant, we interpret pairwise differences for the int
 ```{r}
 # Run a post-hoc test for pairwise differences
 TukeyHSD(Litter.anova.2way3)
+#All possible pairs are considered 
 
 Litter.interaction <- with(Litter, interaction(functionalGroup, nlcdClass))
+#Creates a variable with interaction between functionalGroup and class for each row 
 
 #Litter.test <- cbind(Litter,Litter.interaction)
 
 Litter.anova.2way5 <- aov(data = Litter, dryMass ~ Litter.interaction)
+#Doing it this way means they will not assess each interaction variable individually
 
 Litter.groups <- HSD.test(Litter.anova.2way5, "Litter.interaction", group = TRUE)
 Litter.groups
@@ -163,8 +206,25 @@ Litter.groups
 # Edit this graph to make it more visually appealing.
 # Add letters to represent statistical groupings.
 Litter.anova.plot <- ggplot(Litter, aes(y = dryMass, x = nlcdClass, color = functionalGroup)) +
-  geom_boxplot()
+  geom_boxplot()+
+  labs(y="Dry Mass", x="NLCD Class", color= "")+
+  stat_summary(geom = "text", fun = max, vjust = -1, size = 5,
+               label = c("d", "d", "d", "a", "d", "d", "d", "d",
+                         "d", "d", "d", "b", "d", "d", "d", "d",
+                         "d", "d", "cd", "bc", "d", "d", "d", "d"))
 print(Litter.anova.plot)
+
+Litter.anova.plot.v2 <- ggplot(Litter, aes(y = dryMass, x = nlcdClass, color = functionalGroup)) +
+  geom_boxplot()+
+  labs(y="Dry Mass", x="NLCD Class", color= "")+
+  stat_summary(geom = "text", fun = max, size = 5, 
+               label = c("", "", "", "a", "", "", "", "",
+                         "", "", "", "b", "", "", "", "",
+                         "", "", "cd", "bc", "", "", "", ""))+
+  annotate(geom="text", x="grasslandHerbaceous", y=65, label="All variables have the same mean other than the labeled variables.",
+              color="black")
+print(Litter.anova.plot.v2)
+
 
 ```
 
