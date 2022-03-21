@@ -39,6 +39,14 @@ library(tidyverse)
 library(sf)
 library(leaflet)
 library(mapview)
+library(viridis)
+
+A08theme <- theme_classic() +
+  theme(axis.text = element_text(color = "black"), 
+        legend.position = "top", 
+        plot.title = element_text(size=14, hjust=0.5), 
+        plot.subtitle = element_text(size=10, hjust=0.5))
+theme_set(A08theme)
 
 ```
 
@@ -152,8 +160,9 @@ gageheight <- read.csv('../Data/Raw/NWIS_SiteFlowData_NE_RAW.csv')
 colnames(gageheight)
 
 #16. Join location data to it --> only include data where spatial columns is not NA 
-merge_heightsite  <- left_join(gageloc_sf, gageheight, by = c("site_no", "station_nm"))%>%
-    filter(!is.na(coord_acy_cd) & !is.na(dec_coord_datum_cd) & !is.na(geometry))
+merge_heightsite.wNA  <- left_join(gageloc_sf, gageheight, by = c("site_no", "station_nm"))
+merge_heightsite <- na.omit(merge_heightsite.wNA)
+
 
 #17. Show the column names of the joined dataset
 colnames(merge_heightsite)
@@ -172,15 +181,11 @@ Now we can examine where the flooding appears most acute by visualizing gage hei
  * Show the magnitude of gage height by color, shape, other visualization technique.
 
 ```{r}
-library(viridis)
-library(RColorBrewer)
-library(colormap)
-
-
 #Map the points, sized by gage height
 ggplot()+
   geom_sf(data= nebraska.sf, fill = "white")+
   geom_sf(data= merge_heightsite, aes(color = gage_ht))+
+  scale_color_viridis(option = "magma")+
   labs(title = "Gage Sites in Nebraska Shaded by Gage Height", subtitle = "Maggie O'Shea")
 
 
@@ -201,8 +206,8 @@ Up next we will do some spatial analysis with our data. To prepare for this, we 
 
 ```{r}
 #20 Transform the counties and gage location datasets to UTM Zone 14
-nebraska.transform <- st_transform(nebraska.sf, EPGS = 32614)
-gagesites.transform <- st_transform(merge_heightsite, EPSG = 32614)
+nebraska.transform <- st_transform(nebraska.sf, crs = 32614)
+gagesites.transform <- st_transform(merge_heightsite, crs = 32614)
 
 #21 Plot the data
 ggplot()+
