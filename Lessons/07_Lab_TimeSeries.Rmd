@@ -5,7 +5,7 @@ date: "Spring 2022"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
-  chunk_output_type: console
+  chunk_output_type: inline
 ---
 
 ## Objectives
@@ -43,14 +43,14 @@ Research question: Can you see any changes on the rainfall regime or average tem
 
 ```{r}
 #Exercise 1: Import both datasets using the read.csv function.
-Rainfall_BR <- read.csv("./Data/Raw/pr_1901_2016_BRA.csv", stringsAsFactors = TRUE)
+Rainfall_BR <- read.csv("../Data/Raw/pr_1901_2016_BRA.csv", stringsAsFactors = TRUE)
 
-Temp_BR <- read.csv("./Data/Raw/tas_1901_2016_BRA.csv", stringsAsFactors = TRUE)
+Temp_BR <- read.csv("../Data/Raw/tas_1901_2016_BRA.csv", stringsAsFactors = TRUE)
 
 #Exercise 2: Tidy the rainfall data sets.
 #a Rename the column with Rainfall to get rid of the dots.
 #b Note that on both data sets that is a column with the month name and average. Convert it to a Month column by separating the string, i.e., month in one column and the word "Average" on another. Hint: use the separate() function in the pipe.
-#c Now you should have a column with Month. Use the paste0() function to paste month and year together and create a date object.
+#c Now you should have a column with Month. Use the paste0() function to paste month and year together and create a date object. --> paste0() pastes all the elements together that you list in the parantheses 
 #d Select only the columns of interest: Date and rainfall
 
 Rainfall_BR_processed <-
@@ -80,16 +80,29 @@ BRA_complete <- inner_join(Rainfall_BR_processed,Temp_BR_processed)
 
 ```{r}
 
-#Exercise 5: Check if there is any missing data for both temperature and rainfall series.
+#Exercise 5: Check if there is any missing data for both temperature and rainfall series. --> None.
+
+summary(BRA_complete$Temperature_C)
+summary(BRA_complete$Rainfall)
+
+#Exercise 6: Plot both series over time on separate plots. Add a trend line using geom_smooth(). Can you say something about the trend just by visualizing the data? --> Both appear to have increasing trends, though this seems to be a stronger trend in the temperature. 
 
 
+temp_data_plot <-
+ggplot(BRA_complete, aes(x = Date, y = Temperature_C)) +
+  geom_point() +
+  geom_line() +
+  ylab("Temperature (Celsius)") +
+  geom_smooth( method = lm )
+print(temp_data_plot)
 
-
-#Exercise 6: Plot both series over time on separate plots. Add a trend line using geom_smooth(). Can you say something about the trend just by visualizing the data?
-
-
-
-
+rain_data_plot <-
+ggplot(BRA_complete, aes(x = Date, y = Rainfall)) +
+  geom_point() +
+  geom_line() +
+  ylab("Average Rainfall") +
+  geom_smooth( method = lm )
+print(rain_data_plot)
 
 
 ```
@@ -98,8 +111,13 @@ BRA_complete <- inner_join(Rainfall_BR_processed,Temp_BR_processed)
 
 ```{r}
 #Exercise 7: Create a time series objects for each series using ts(). Make sure you specify the starting point and frequency.
+#Choose frequency based on period: if your time component is months then freq = 12, if daily then freq= 365
 
+temp_ts <- ts(BRA_complete$Temperature_C, start = c(1901,1), frequency = 12)
+head(temp_ts, 10)
 
+rain_ts <- ts(BRA_complete$Rainfall, start = c(1901,1), frequency = 12)
+head(rain_ts, 10)
 
 ```
 
@@ -120,23 +138,52 @@ The `stl` function decomposes the time series object into its component parts. W
 
 # Exercise 8: Use the stl() function to decompose both series. 
 # Visualize the decomposed series using plot(). What components can you identify?
+rain_Decomposed <- stl(rain_ts, s.window = "periodic")
 
+temp_Decomposed <- stl(temp_ts, s.window= "periodic")
 
-
-
-
+plot(temp_Decomposed)
+plot(rain_Decomposed)
 
 # Exercise 9: Use the times series object generated with the stl() to extract the 
 # components of each series and turn them into data frames.
 
+temp_Components <- as.data.frame(temp_Decomposed$time.series[,1:3])
+#Look at environments to see what to put for [,1:3] --> if you only wanted seasonal you could do [,2] for example
+
+temp_Components <- mutate(temp_Components,
+        Observed = BRA_complete$Temperature_C,     
+        Date = BRA_complete$Date)
 
 
+rain_Components <- as.data.frame(rain_Decomposed$time.series[,1:3])
 
+rain_Components <- mutate(rain_Components,
+        Observed = BRA_complete$Rainfall,     
+        Date = BRA_complete$Date)
 
 
 # Exercise 10: Visualize how the trend maps onto the data for both series
 
+ggplot(rain_Components) +
+  geom_line(aes(y = Observed, x = Date),  size = 0.25) +
+  geom_line(aes(y = trend, x = Date), color = "Orange") +
+  geom_hline(yintercept = 0, lty = 2) + #creates dotted line at zero
+  ylab(expression("Average Rainfall"))
 
+ggplot(temp_Components) +
+  geom_line(aes(y = Observed, x = Date),  size = 0.25) +
+  geom_line(aes(y = trend, x = Date), color = "Orange") +
+  ylab(expression("Average Temperature (Celsius)"))
+
+
+
+ggplot(temp_Components) +
+  geom_line(aes(y = seasonal, x = Date),  size = 0.25) +
+  geom_line(aes(y = remainder, x = Date), color = "Blue") +
+  geom_line(aes(y = trend, x = Date), color = "Orange") +
+  geom_line(aes(y = Observed, x = Date), color = "Red") +
+  ylab(expression("Average Temperature (Celsius)"))
 
 
 
@@ -156,25 +203,75 @@ Monotonic trends are a gradual shift over time that is consistent in direction. 
 
 ```{r}
 
-# Exercise 11: Apply one of the trend detection test to the original data set. Remember that the data has seasonal component, which test can be applied in this case?
+# Exercise 11: Apply one of the trend detection test to the original data set. Remember that the data has seasonal component, which test can be applied in this case? The Seasonal Mann-Kendall 
+
+f_month <- month(first(BRA_complete$Date))
+f_year <- year(first(BRA_complete$Date))
+BRAtemperature_ts <- ts(BRA_complete$Temperature_C,
+                   start=c(f_year,f_month),
+                   frequency=12) 
+
+#decompose
+BRAtemp_decomp <- stl(BRAtemperature_ts, s.window = "periodic")
+
+smk.temperature <- Kendall::SeasonalMannKendall(BRAtemperature_ts)
+
+# Inspect results
+smk.temperature
+summary(smk.temperature)
+
+#Analyze Results: Results point to p-value less than 0.05 and the null hypothesis is that the data is stationary. So, with a p-value that is small we can reject the null and say that we do have a trend in temperature over time. 
 
 
+#Rainfall
+f_month <- month(first(BRA_complete$Date))
+f_year <- year(first(BRA_complete$Date))
+BRArainfall_ts <- ts(BRA_complete$Rainfall,
+                   start=c(f_year,f_month),
+                   frequency=12) 
+
+#decompose
+BRArain_decomp <- stl(BRArainfall_ts,s.window = "periodic")
+
+smk.rain <- Kendall::SeasonalMannKendall(BRArainfall_ts)
+
+# Inspect results
+smk.rain
+summary(smk.rain)
 
 
-
-
+#Analyze Results: Results point to p-value greater than 0.05 and the null hypothesis is that the data is stationary. So, with a larger p-value, we do not have evidence to reject the null hypothesis suggesting that the data is stationary. 
 
 
 
 # Exercise 12: Now remove the seasonality and apply another test. Compare the results with what you obtained on Exercise 9.
 
+#Did initial ts objects remove seasonality with the: "s.window: periodic"?
+
+noseason_rain <- mutate(rain_Components,
+        NoSeason = trend+remainder)
+
+noseason_rainfall_ts <- ts(noseason_rain$NoSeason,
+                   start=c(f_year,f_month),
+                   frequency=12) 
+
+Kendall::MannKendall(noseason_rainfall_ts)
 
 
 
+#P-value is large so we cannot reject the null hypothesis, suggesting that the data may be stationary. 
+
+noseason_temp <- mutate(temp_Components,
+        NoSeason = trend+remainder)
+
+noseason_temp_ts <- ts(noseason_temp$NoSeason,
+                   start=c(f_year,f_month),
+                   frequency=12) 
+
+Kendall::MannKendall(noseason_temp_ts)
 
 
-
-
+#Result provides a small p-value, rejecting the null and providing evidence that the data is not stationary. 
 
 
 
@@ -182,6 +279,6 @@ Monotonic trends are a gradual shift over time that is consistent in direction. 
 
 What would we conclude based on these findings? 
 
-> Answer:
+> Answer: These findings, from both the seasonal mann kendall and the mann-kendall, suggest that temperature is not stationary but is changing over time. Rainfall, for both models, 
 
 

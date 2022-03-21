@@ -29,6 +29,7 @@ Nonstationary Data: variable with upward an downward trend
 - Autocorrelation: measure of dependence between two adjacent values of the same variables 
 [-> same variable at different times 
 [-> With one variable you compute autocorrelation with a single variable of the original series and the lagged version of the series (so compare Y1 with Y2, Y2 with Y3, etc.). Can also do lag 2 autocorrelation which is Y1 with Y3, Y2 with Y4 etc 
+[-> Compute new column where you are lagging all observations by one and then compute correlation between lagged and not lagged 
 
 Autocovariance/Autocorrelation function gives information about the dependence structure of the time series 
 - If correlation is significant then it says that the outcome for Y2 is highly dependent on Y1
@@ -43,10 +44,14 @@ Stationary Process: probability laws that govern the behavior of the process do 
 ACF and PCF measure temporal dependency of a stochastic process 
 -> always build this before fitting a model 
 -> autoregressive model: model where you are representing your time series based on previous times of model 
+-> partial autocorrelation gives relationship when the influence of intermediate observations of removed (?) 
 
 *Stochastic vs. Deterministic*
 Derministic linear trend purpose 
 - detrending is accomplished by running a regression and obtaining residuals which will give you de-trended series --> call trend-stationarity
+[-> de-trending: if you are trying to model a dataset, need to understand all the components to create a good representation of the data 
+----> You aren't removing the trend, you are just identifying the trend to ensure that the model reflects the trend 
+----> Identify characteristics of data then model 
 
 Stochastic trend: trend that has difference behaviors over time 
 - Stochastic trend has difference stationarity
@@ -71,7 +76,8 @@ Stochastic trend: trend that has difference behaviors over time
 [->If want to include more lags in equation: Augmented Dick Fuller Test 
 [->> adf.test 
 
-
+#Main idea of Time Series Analyses 
+Whatever happened in the past, will happen in the future --> can use to model/forecast the future 
 
 
 ## Set up
@@ -97,15 +103,16 @@ mytheme <- theme_classic(base_size = 14) +
         legend.position = "top")
 theme_set(mytheme)
 
-#Read Eno river data
-EnoDischarge <- read.csv("./Data/Processed/USGS_Site02085000_Flow_Processed.csv",
+#Read Eno river data -- daily time steps 
+EnoDischarge <- read.csv("../Data/Processed/USGS_Site02085000_Flow_Processed.csv",
                          stringsAsFactors = TRUE)
 EnoDischarge$datetime <- as.Date(EnoDischarge$datetime, format = "%Y-%m-%d")
 
-#Read wind speed data
-wind_data <- read.csv(file="./Data/Raw/Wind_Speed_PortArthurTX.csv",header=TRUE,
+#Read wind speed data -- monthly time steps 
+wind_data <- read.csv(file="../Data/Raw/Wind_Speed_PortArthurTX.csv",header=TRUE,
                       stringsAsFactors = TRUE)
 wind_data$DATE <- ym(wind_data$DATE)
+#ym function turns to date ?
 
 ```
 
@@ -173,6 +180,8 @@ We will decompose the EnoDischarge.late data frame for illustrative purposes tod
 
 We first need to turn the discharge data into a time series object in R. This is done using the `ts` function. Notice we can only specify one column of data and need to specify the period at which the data are sampled. The resulting time series object cannot be viewed like a regular data frame.
 
+*Needs to be time series object*
+
 Note: time series objects must be equispaced. In our case, we have daily data with no NAs in the data frame, so we don't need to worry about this. We will cover how to address data that are not equispaced later in the lesson.
 
 ```{r}
@@ -193,6 +202,8 @@ EnoDischarge.late_Decomposed <- stl(EnoDischarge.late_ts, s.window = "periodic")
 
 # Visualize the decomposed series. 
 plot(EnoDischarge.late_Decomposed)
+
+#time series has seasonal - trend - remainder and if you sum these it will create your observation
 
 # We can extract the components and turn them into data frames
 EnoDischarge.late_Components <- as.data.frame(EnoDischarge.late_Decomposed$time.series[,1:3])
@@ -222,14 +233,14 @@ Note that the decomposition can yield negative values when we apply a seasonal a
 
 ## Trend analysis
 
-Two types of trends may be present in our time series dataset: **monotonic/deterministic** or **stochastic**. Monotonic trends are a gradual shift over time that is consistent in direction, for example in response to land use change. 
+Two types of trends may be present in our time series dataset: monotonic/deterministic or stochastic. **Monotonic trends are a gradual shift over time that is consistent in direction**, for example in response to land use change. 
 
 A third type of trend we haven't talked about is the **step** trend, also known as a level shift. Step trends are a distinct shift at a given time point, for example in response to a policy being enacted. 
 
 
 ### Monotonic trend analysis
 
-In general, detecting a monotonic trend requires a long sequence of data with few gaps. If we are working with monthly data, a time series of at least five years is recommended. Gaps can be accounted for, but a gap that makes up more than 1/3 of the sampling period is generally considered the threshold for considering a gap to be too long (a step trend analysis might be better in this situation). 
+In general, *detecting a monotonic trend requires a long sequence of data with few gaps.* If we are working with monthly data, a time series of at least five years is recommended. Gaps can be accounted for, but a gap that makes up more than 1/3 of the sampling period is generally considered the threshold for considering a gap to be too long (a step trend analysis might be better in this situation). 
 
 Adjusting the data may be necessary to fulfill the assumptions of a trend test. A common method to replace missing values is **interpolation**. Common interpolation methods: 
 
@@ -255,8 +266,12 @@ wind_data_clean <-
   wind_data %>% 
   mutate( AWND.clean = zoo::na.approx(AWND) )
 
+#na.approx function uses linear or spline method to interpolate 
+
 summary(wind_data_clean$AWND.clean)
 #Note the NA is gone
+
+#Time series cannot just remove NA values because you can't have a missing value when doing Time series
 
 ggplot(wind_data_clean ) +
   geom_line(aes(x = DATE, y = AWND.clean), color = "red") +
@@ -272,10 +287,18 @@ Specific tests for monotonic trend analysis are listed below, with assumptions a
 * **Mann-Kendall**: no seasonality, non-parametric, missing data allowed. Function: `MannKendall()` (package: Kendall)
 * **Seasonal Mann-Kendall**: seasonality, non-parametric `SeasonalMannKendall` (package: Kendall)
 * **Spearman Rho**: no seasonality, non-parametric, missing data allowed. Function: `cor.test(method="spearman")` (package: stats)
+--> correlation of time series over time 
+
+*Can remove the seasonality of the dataset, and use other tests but will not learn this.*
 
 Specific test for stochastic trend analysis:
 
 * **Augmented Dickey Fuller**: no seasonality, non-parametric, missing data not allowed. Function: `adf.test()` (package: tseries)
+
+Difference between stochastic and monotonic 
+- Monotonic: trend is constant over time
+- Stochastic: Trend changes slope over time 
+---> for example, over 1990s there is increasing, then 2000s its stable, then in 2020s its increasing again so trend is changing 
 
 
 #### Example: monotonic trend analysis
@@ -288,6 +311,7 @@ Note that wind speed has a seasonal cycle. We might be interested in knowing how
 ```{r}
 
 # Generate time series (trend test needs ts, not data.frame)
+#Defining first time period is good for time series 
 f_month <- month(first(wind_data_clean$DATE))
 f_year <- year(first(wind_data_clean$DATE))
 wind_data_ts <- ts(wind_data_clean$AWND.clean,
@@ -322,18 +346,20 @@ print(wind_data_plot)
 
 ```
 
+
+
 What would we conclude based on these findings? 
 
-> Answer:
+> Answer: Results point to p-value less than 0.05 and the null hypothesis is that the data is stationary. So, with a p-value that is small we can reject the null and say that we have a trend indeed. The value S with the trend 2 analysis we can see some have stronger decrease in certain seasons. 
 
 
 ## Forecasting with Autoregressive and Moving Average Models (ARMA)
 
 We might be interested in characterizing a time series in order to understand what happened in the past and to effectively forecast into the future. Two common models that can approximate time series are **autoregressive** and **moving average** models. To classify these models, we use the  **ACF (autocorrelation function)** and the **PACF (partial autocorrelation function)**, which correspond to the autocorrelation of a series and the correlation of the residuals, respectively. 
 
-**Autoregressive** models operate under the framework that a given measurements is correlated with  previous measurements. For example, an AR1 formulation dictates that a measurement is dependent on the previous measurement, and the value can be predicted by quantifying the lag. 
+**Autoregressive** models operate under the framework that *a given measurements is correlated with  previous measurements*. For example, an AR1 formulation dictates that a measurement is dependent on the previous measurement, and the value can be predicted by quantifying the lag.  Says that Yt is correlated with Yt-1 
 
-**Moving average** models operate under the framework that the covariance between a measurement and the previous measurement is zero. While AR models use past forecast *values* to predict future values, MA models use past forecast *errors* to predict future values.
+**Moving average** models operate under the framework that the *covariance between a measurement and the previous measurement is zero*. **While AR models use past forecast *values* to predict future values, MA models use past forecast *errors* to predict future values.**
 
 Here are some great resources for examining ACF and PACF lags under different formulations of AR and MA models. 
 https://nwfsc-timeseries.github.io/atsa-labs/sec-tslab-autoregressive-ar-models.html

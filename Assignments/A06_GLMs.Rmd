@@ -89,7 +89,7 @@ mutatejuly.chempyhs.NTL <- chempyhs.NTL%>%
 ggplot(mutatejuly.chempyhs.NTL, aes(x = depth, y = temperature_C)) + 
   geom_point()+
   labs(y= "Temperature (°C)", 
-       x = "Depth", 
+       x = "Depth (meters)", 
        title = "Lake Depth and Temperature in July", 
        subtitle = "North Temperate Lakes Long Term Ecological Research, Wisconsin, USA")+
   theme(axis.text.x=element_text(size = 10)) +
@@ -177,7 +177,7 @@ summary(temp.lmanova)
 #14.
 ggplot(mutatejuly.chempyhs.NTL, aes(x = depth, y = temperature_C)) + 
   geom_point(aes(color = lakename), alpha = 0.5)+
-  labs(y= "Temperature (°C)", x = "Depth", 
+  labs(y= "Temperature (°C)", x = "Depth", color = "Lake Name", 
        title = "Lake Depth and Temperature in July", 
        subtitle = "North Temperate Lakes Long Term Ecological Research, Wisconsin, USA")+
   guides(fill=guide_legend(title="Lake Name")) +
@@ -185,7 +185,7 @@ ggplot(mutatejuly.chempyhs.NTL, aes(x = depth, y = temperature_C)) +
   theme(plot.subtitle=element_text(size=10, hjust=0.5)) +
   theme(axis.text.x=element_text(size = 10)) +
   theme(axis.text.y=element_text(size = 10)) +
-  geom_smooth(method = lm, color="deepskyblue3", se= FALSE)+
+  geom_smooth(method = lm, color="Black", se= FALSE)+
   ylim(0, 35)
 
 ```
@@ -197,18 +197,14 @@ ggplot(mutatejuly.chempyhs.NTL, aes(x = depth, y = temperature_C)) +
 TukeyHSD(temp.anova)
 
 ```
-crampton, central long, ward, hummingbird, east long, tuesday, west long, peter, paul ward, 
+
 16.From the findings above, which lakes have the same mean temperature, statistically speaking, as Peter Lake? Does any lake have a mean temperature that is statistically distinct from all the other lakes?
 
 >Answer: From the findings, two lakes do not have statistically significant differences in mean temperatures to Peter Lake: Ward Lake (1.14, p = 0.78) and Paul Lake (-0.498, p = 0.22). Each lake had at least one difference in means that was not statistically significant at a p=0.05 threshold. 
 
-```{r warning=FALSE, message = FALSE}
-hsd.test <- HSD.test(temp.anova, "lakename", group = TRUE)
-hsd.test
-```
 
 17. If we were just looking at Peter Lake and Paul Lake. What's another test we might explore to see whether they have distinct mean temperatures? 
 
->Answer: We could use a t-test to compare the means of the two groups. 
+>Answer: We could use an HSD test to compare the distinct means of all the lakes, or a t-test could be used to compare the means of Peter and Paul Lake specifically. 
 
 
