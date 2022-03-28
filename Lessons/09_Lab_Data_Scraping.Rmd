@@ -5,7 +5,7 @@ date: "Spring 2022"
 output: pdf_document
 geometry: margin=2.54cm
 editor_options: 
-  chunk_output_type: console
+  chunk_output_type: inline
 ---
 
 ## Objectives
@@ -74,7 +74,7 @@ theme_set(mytheme)
 You should be presented with a page of the latest water flow data for the Neuse River near Clayton, NC.If you had issues, a shortened link is here: <https://on.doi.gov/3ewCMPP>. 
 
 Have a look at the link (not the shortened one) and you'll see that it has the RESTful format. We can easily edit the URL to fetch data for another site: 
-* In the URL replace `02087500` with `02085070` and re-submit. What site's data do we have now? Saved a lot of clicks in getting to this dataset, didn't we? 
+* In the URL replace `02087500` with `02085070` and re-submit. What site's data do we have now? Eno River near Durham, NC... Saved a lot of clicks in getting to this dataset, didn't we? 
 
 The power in this is that we aren't limited to sending requests and handling responses in a browser; we can do this via scripts in R. If the data we are retrieving is a simple text file, as it is here, we don't even need any special packages, though we do need to do a bit of wrangling to skip header lines...
 
@@ -86,6 +86,7 @@ theURL <- 'https://waterdata.usgs.gov/nwis/uv?search_site_no=02087500&period=7&f
 
 #Get the data, which starts on line 30
 gage_data <- read.table(theURL,skip = 29,header=TRUE,sep='\t') 
+# sep = '\t' tells the site that the data is separated by tab (not comma, etc.) 
 
 #Update the column headers
 colnames(gage_data) = c("agency_cd", "site_no", "datetime", "tz_cd",
@@ -103,6 +104,28 @@ ggplot(gage_data,aes(x=datetime,y=discharge_cfs)) +
 
 ### Exercise: 
 > Alter the above code so that it plots the last 24 days of flow for gage 02085070
+
+```{r exercise1pull.and.plot.discharge.data}
+#Set the URL
+theURL <- 'https://waterdata.usgs.gov/nwis/uv?search_site_no=02085070&period=24&format=rdb'
+
+#Get the data, which starts on line 30
+gage_data <- read.table(theURL,skip = 29,header=TRUE,sep='\t') 
+# sep = '\t' tells the site that the data is separated by tab (not comma, etc.) 
+
+#Update the column headers
+colnames(gage_data) = c("agency_cd", "site_no", "datetime", "tz_cd",
+                        "discharge_cfs", "89192_00060_cd", "gage_ht_ft", "89193_00065_cd")
+#Tidy the data
+gage_data <- gage_data %>% 
+  select(datetime, discharge_cfs,gage_ht_ft) %>% 
+  mutate(datetime = ymd_hm(datetime))
+
+#Plot
+ggplot(gage_data,aes(x=datetime,y=discharge_cfs)) + 
+  geom_line() +
+  labs(x = "Date",y = "Discharge (cfs)")
+```
 
 ## APIs
 
@@ -162,7 +185,39 @@ You'll also need to look up the IDs of the variables you want to extract. Those 
 
 ```{r}
 #Apply the API key
-#census_api_key("d4ad7874c996c7a83fec0a81466309ddc07d8e22a", install = TRUE)
+#census_api_key("2fef4e33b6b4476877e9407b30885a00f94e9a0a", install = TRUE)
+
+#To view the variable codes
+v17 <- load_variables(2017, "acs5", cache = TRUE)
+
+maine.seasonalhousing <- get_acs(geography = "tract", 
+                                 variables = "B25004_006",
+                                 state = "ME", 
+                                 geometry = TRUE)
+maine.totalhousing <- get_acs(geography = "tract", 
+                                 variables = "B25001_001",
+                                 state = "ME", 
+                                 geometry = TRUE)
+library(sf)
+maine.perchousing <- st_join(maine.seasonalhousing, maine.totalhousing, by = "NAME")
+
+
+percseasonal.ME <- maine.seasonalhousing %>% 
+  mutate("totalhousingunits" = B25081_008 + B25027_002)%>%
+  mutate ("percseasonal" = (B25004_006/totalhousingunits)*100)
+
+
+ggplot(maine.seasonalhousing, aes(fill = estimate, color = estimate)) +
+  geom_sf() +
+  coord_sf(crs = 4326) +
+  scale_fill_viridis(option = "viridis") +
+  scale_color_viridis(option = "viridis")
+
+ggplot(nc_pop, aes(fill = estimate, color = estimate)) +
+  geom_sf() +
+  coord_sf(crs = 4326) +
+  scale_fill_viridis(option = "viridis") +
+  scale_color_viridis(option = "viridis")
 
 nc_pop <- 
   get_acs(geography = "county",
@@ -203,16 +258,37 @@ The RVest scraping workflow is as follows:
 
 ```{r eval=FALSE}
 #1 Link to the web site using read_html
-the_website
+the_website <- read_html("https://www.eia.gov/electricity/state/")
+
 
 #2&3 Locate elements and read their text attributes into variables
-the_states <- 
-the_price <- 
-the_capacity <- 
-net_generation <- 
-total_retail <- 
+the_states <- '.basic_table a'
+the_price <- 'td:nth-child(2)'
+the_capacity <- 'td:nth-child(3)'
+net_generation <- 'td:nth-child(4)'
+total_retail <- 'td:nth-child(5)'
+
+states_web <- the_website %>% html_nodes(the_states) %>% html_text()
+price_web<- the_website %>%   html_nodes(the_price) %>%  html_text()
+capacity_web <- the_website %>% html_nodes(the_capacity) %>% html_text()
+generation_web <- the_website %>% html_nodes(net_generation) %>% html_text()
+retail_web <- the_website %>% html_nodes(total_retail) %>% html_text()
   
 #3 Construct a dataframe from the values
+df_stateelectricity <- data.frame("State_Name" = as.character(states_web),
+                             "Avg_retail_price" = as.numeric(price_web),
+                             "NetSummerCapacity" = as.character(capacity_web), 
+                             "NetGeneration" = as.character(generation_web), 
+                             "TotalRetailSales" = as.character(retail_web))
+
+#remove commas, make numeric
+df_stateelectricity$NetSummerCapacity <- as.numeric(gsub(",","",df_stateelectricity$NetSummerCapacity))
+
+df_stateelectricity$NetGeneration <- as.numeric(gsub(",","",df_stateelectricity$NetGeneration))
+
+df_stateelectricity$TotalRetailSales <- as.numeric(gsub(",","",df_stateelectricity$TotalRetailSales))
+
+
 ```
 
 
@@ -228,9 +304,25 @@ scrape.it <- function(the_year){
   
   #Scrape the data
   #<enter code from above here>
+  the_states <- '.basic_table a'
+  the_price <- 'td:nth-child(2)'
+  the_capacity <- 'td:nth-child(3)'
+  net_generation <- 'td:nth-child(4)'
+  total_retail <- 'td:nth-child(5)'
+
+  states_web <- the_website %>% html_nodes(the_states) %>% html_text()
+  price_web<- the_website %>%   html_nodes(the_price) %>%  html_text()
+  capacity_web <- the_website %>% html_nodes(the_capacity) %>% html_text()
+  generation_web <- the_website %>% html_nodes(net_generation) %>% html_text()
+  retail_web <- the_website %>% html_nodes(total_retail) %>% html_text()
   
   #Convert to dataframe
-  #<enter code from above here>
+  the_df <- data.frame("State_Name" = as.character(states_web),
+                             "Avg_retail_price" = as.numeric(price_web),
+                             "NetSummerCapacity" = as.numeric(gsub(",","", capacity_web)), 
+                             "NetGeneration" = as.numeric(gsub(",","",generation_web)), 
+                             "TotalRetailSales" = as.numeric(gsub(",","",retail_web)), 
+                             "Year" = the_year)
   
   #Return the dataframe
   return(the_df)
@@ -238,10 +330,24 @@ scrape.it <- function(the_year){
 
 
 # Use the above function to scrape data for 2017
-
+scrape.it(2017)
 
 # Map the function to scrape data from 2017 to 2020
+electricity.years = rep(2017:2020)
 
+#Use lapply to apply the scrape function
+the_dfs <- lapply(X = electricity.years,
+                  FUN = scrape.it)
+
+fix_df <- bind_rows(the_dfs)
+
+
+
+ggplot(fix_df,aes(y = Avg_retail_price, x=Year)) +
+  geom_line()
+
+v2_df<- map(electricity.years, scrape.it) %>% bind_rows 
+v2_df
 
 ```
 
