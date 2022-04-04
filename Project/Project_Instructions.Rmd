@@ -6,6 +6,7 @@ output: pdf_document
 geometry: margin=2.54cm
 ---
 
+
 ## CREATE A REPOSITORY IN YOUR GITHUB ACCOUNT 
 
 1. Go to your user account on GitHub an navigate to the repositories tab. 
@@ -25,6 +26,12 @@ geometry: margin=2.54cm
 3. Paste the repository URL and give your repository a name and a file path.
 
 ## CHOOSE A DATASET AND A RESEARCH QUESTION
+
+What kind of hazard gets the most funding 
+- Codes --> breaking up 
+- Find disaster number meaning -- merge : Garrett 
+- background research 
+where and why
 
 1. Choose a dataset of interest. This can be one of the datasets we have analyzed in class this semester or a dataset of your choosing. If the latter, I recommend consulting with the course instructors to make sure the scope of the dataset is appropriate.
 

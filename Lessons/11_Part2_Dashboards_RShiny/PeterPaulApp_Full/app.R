@@ -1,4 +1,4 @@
-#### Load packages ----
+#### Load packages ---- R script has to be called app.R 
 library(shiny)
 library(shinythemes)
 library(tidyverse)
@@ -10,13 +10,14 @@ nutrient_data <- nutrient_data %>%
   filter(depth_id > 0) %>%
   select(lakename, sampledate:po4)
 
-#### Define UI ----
-ui <- fluidPage(theme = shinytheme("yeti"),
+#### Define UI ---- User Interface - building UI object, instructions for components and arrange
+#Fluid page means that it can be resized and the UI reacts.
+ui <- fluidPage(theme = shinytheme("journal"),
   titlePanel("Nutrients in Peter Lake and Paul Lake"),
   sidebarLayout(
     sidebarPanel(
       
-      # Select nutrient to plot
+      # Select nutrient to plot input ID is "y"; change selected.
       selectInput(inputId = "y", 
                   label = "Nutrient",
                   choices = c("tn_ug", "tp_ug", "nh34", "no23", "po4"), 
@@ -43,11 +44,11 @@ ui <- fluidPage(theme = shinytheme("yeti"),
 
     # Output
     mainPanel(
-      plotOutput("scatterplot", brush = brushOpts(id = "scatterplot_brush")), 
+      plotOutput("scatterplot", brush = brushOpts(id = "scatterplot_brush", fill = "#9cf")), 
       tableOutput("mytable")
     )))
 
-#### Define server  ----
+#### Define server  ---- function, which maps the instructions of what happens when user does something to map 
 server <- function(input, output) {
   
     # Define reactive formatting for filtering within columns
@@ -86,14 +87,23 @@ shinyApp(ui = ui, server = server)
 #1. Play with changing the options on the sidebar. 
     # Choose a shinytheme that you like. The default here is "yeti"
     # How do you change the default settings? 
+        #I replaced the yeti in this code: "fluidPage(theme = shinytheme("yeti")," with journal. 
     # How does each type of widget differ in its code and how it references the dataframe?
+        #Each widget differs in what panel it is in (side or main), as well as its 'role' in the UI. 
+        #The widgets such as that which creates the drop-down menu refer to the dataframe in different ways especially under the "choices = " code. 
+        #This varies depending on if the widget is referring to a column name (ex: tp_ug) or the values in a column.  
 #2. How is the mainPanel component of the UI structured? 
     # How does the output appear based on this code?
+        # The main panel is the part of the user interface that is central to the dashboard. 
+        # In this case, the main panel is made to be a scatterplot using the data outlined above, with a particular brush type.
 #3. Explore the reactive formatting within the server.
     # Which variables need to have reactive formatting? 
+        #The inputs such as the y variable in the plot need to have reactive formatting as they change according to the users choice.
     # How does this relate to selecting rows vs. columns from the original data frame?
+        #The rows designated as "selected" are those that will be first shown when opening the interface. 
 #4. Analyze the similarities and differences between ggplot code for a rendered vs. static plot.
     # Why are the aesthetics for x, y, fill, and shape formatted the way they are?
+        #These aesthetics are formatted this way to match the language of the UI code which will then be used to make these adapted to the 
     # Note: the data frame has a "()" after it. This is necessary for reactive formatting.
     # Adjust the aesthetics, playing with different shapes, colors, fills, sizes, transparencies, etc.
 #5. Analyze the code used for the renderTable function. 

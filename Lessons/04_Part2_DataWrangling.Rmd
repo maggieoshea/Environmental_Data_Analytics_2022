@@ -186,7 +186,8 @@ dplyr functionality, combined with the pipes operator, allows us to split datase
 ```{r}
 NTL.PeterPaul.summaries <- 
   NTL.phys.nutrient.data.PeterPaul %>%
-  filter(depth == 0) %>%
+  
+(depth == 0) %>%
   group_by(lakename, month) %>%
   filter(!is.na(temperature_C) & !is.na(tn_ug) & !is.na(tp_ug)) %>%
   summarise(meantemp = mean(temperature_C), 
